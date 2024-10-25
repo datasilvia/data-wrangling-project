@@ -28,17 +28,14 @@ soup = BeautifulSoup(html, 'html.parser')
 
 # Paso 4: Extraer la información específica
 # Buscar los elementos de energía basados en el texto contenido
-energia_valle_element = soup.find("span", string="Valle")
-energia_llano_element = soup.find("span", string="Llano")
-energia_punta_element = soup.find("span", string="Punta")
+energia_elements = soup.select("div.flex.flex-col.sm\\:flex-row.items-center.justify-center.sm\\:justify-between.sm\\:h-1\\/4.md\\:h-2\\/5.border-2.border-primary-light.rounded-t-xl.overflow-hidden ul li")
+potencia_element = soup.select_one("div.flex.flex-col.sm\\:flex-row.items-center.justify-center.sm\\:justify-between.sm\\:h-1\\/4.md\\:h-2\\/5.border-t.border-t-gray-100.border-2.border-primary-light ul li")
+coste_gestion_element = soup.select_one("div.flex.flex-col.sm\\:flex-row.items-center.justify-center.sm\\:justify-between.sm\\:h-1\\/6.xl\\:h-1\\/5.border-t.border-t-gray-100.border-2.border-primary-light p.font-bold")
 
 # Verificar que los elementos existen antes de acceder a su texto
-energia_valle = energia_valle_element.find_next("li").text.strip() if energia_valle_element else "No encontrado"
-energia_llano = energia_llano_element.find_next("li").text.strip() if energia_llano_element else "No encontrado"
-energia_punta = energia_punta_element.find_next("li").text.strip() if energia_punta_element else "No encontrado"
-potencia_element = soup.select_one("div.border-t-primary-light ul li")
-coste_gestion_element = soup.select_one("div.border-t-primary-light p.font-bold")
-
+energia_valle = energia_elements[0].text.strip() if len(energia_elements) > 0 else "No encontrado"
+energia_llano = energia_elements[1].text.strip() if len(energia_elements) > 1 else "No encontrado"
+energia_punta = energia_elements[2].text.strip() if len(energia_elements) > 2 else "No encontrado"
 potencia = potencia_element.text.strip() if potencia_element else "No encontrado"
 coste_gestion = coste_gestion_element.text.strip() if coste_gestion_element else "No encontrado"
 
@@ -52,6 +49,6 @@ data = {
 }
 
 df = pd.DataFrame(data)
-df.to_csv("resultados_tarifas_xenera.csv", index=False)
+df.to_csv("resultados_tarifas_xenera_unica.csv", index=False)
 
-print("Datos guardados en resultados_tarifas_xenera.csv")
+print("Datos guardados en resultados_tarifas_xenera_unica.csv")
