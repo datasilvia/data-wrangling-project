@@ -56,7 +56,7 @@ driver.quit()
 
 # Crear un DataFrame de pandas y guardar los resultados en un CSV
 datos = [[termino_potencia_punta, termino_potencia_valle, termino_energia_punta, termino_energia_llano, termino_energia_valle, compensacion_excedentes_sin_impuestos, compensacion_excedentes_con_impuestos]]
-columnas = ["Término Potencia Punta", "Término Potencia Valle", "Término Energía Punta", "Término Energía Llano", "Término Energía Valle", "Compensación Excedentes Sin Impuestos", "Compensación Excedentes Con Impuestos"]
+columnas = ["Término Potencia Punta", "Término Potencia Valle", "Punta", "Llano", "Valle", "Compensación Excedentes Sin Impuestos", "Compensación Excedentes Con Impuestos"]
 df = pd.DataFrame(datos, columns=columnas)
 df.to_csv("resultados_tarifa_solar_naturgy.csv", index=False)
 
