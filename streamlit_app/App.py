@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
 
 # Obtener la ruta absoluta del directorio actual
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -90,40 +91,42 @@ elif seccion == "Objetivos":
 
 # Sección de Metodología
 elif seccion == "Metodología":
-    st.header("Metodología")
+    st.header("🛠️ Metodología del Proyecto 🛠️")
     st.write("""
-    🛠️ **Metodología del Proyecto** 🛠️
+    En este proyecto, hemos seguido una metodología estructurada para garantizar la precisión y la utilidad de nuestras recomendaciones. A continuación, se detallan los pasos clave que hemos seguido:
 
-    La metodología utilizada en este proyecto incluye los siguientes pasos:
-
-    1. **Recopilación de datos**:
-       - Recopilamos datos de tarifas de luz de diferentes proveedores y datos de eficiencia de placas solares. 🌐
+    1. **Recopilación de Datos** 🌐:
+       - Recopilamos datos de tarifas de luz de diferentes proveedores y datos de eficiencia de placas solares. 📊
        - Utilizamos técnicas de web scraping para obtener datos actualizados de las páginas web de los proveedores de energía. 🕸️🔍
-       - Los datos incluyen información sobre precios de energía, precios de potencia, eficiencia de placas solares, y más. 📊
+       - Los datos incluyen información sobre precios de energía, precios de potencia, eficiencia de placas solares, y más. 💡
 
-    2. **Análisis de datos**:
-       - Analizamos los datos recopilados para identificar las mejores opciones de tarifas de luz y placas solares. 📈
+    2. **Análisis de Datos** 📈:
+       - Analizamos los datos recopilados para identificar las mejores opciones de tarifas de luz y placas solares. 🔍
        - Utilizamos técnicas de análisis de datos para calcular los costos estimados y la energía generada por las placas solares. 💡
 
-    3. **Desarrollo de la aplicación web**:
-       - Desarrollamos una aplicación web utilizando Streamlit para proporcionar una interfaz fácil de usar. 💻
+    3. **Desarrollo de la Aplicación Web** 💻:
+       - Desarrollamos una aplicación web utilizando Streamlit para proporcionar una interfaz fácil de usar. 🚀
        - La aplicación permite a los usuarios ingresar sus datos y obtener recomendaciones personalizadas en tiempo real. ⏱️
 
-    4. **Visualización de datos**:
+    4. **Visualización de Datos** 👁️:
        - Creamos gráficos y visualizaciones utilizando Seaborn y Matplotlib para mostrar comparativas de tarifas y eficiencia de placas solares. 📊
-       - Las visualizaciones ayudan a los usuarios a comprender mejor los datos y las recomendaciones proporcionadas. 👁️
+       - Las visualizaciones ayudan a los usuarios a comprender mejor los datos y las recomendaciones proporcionadas. 📈
 
-    5. **Validación y pruebas**:
-       - Probamos la aplicación con diferentes conjuntos de datos para asegurarnos de que las recomendaciones sean precisas y útiles. ✅
-       - Realizamos ajustes y mejoras basadas en los comentarios de los usuarios y los resultados de las pruebas. 🔧
+    5. **Validación y Pruebas** ✅:
+       - Probamos la aplicación con diferentes conjuntos de datos para asegurarnos de que las recomendaciones sean precisas y útiles. 🔧
+       - Realizamos ajustes y mejoras basadas en los comentarios de los usuarios y los resultados de las pruebas. 🛠️
 
-    Al seguir esta metodología, hemos creado una herramienta poderosa que puede ayudar a los usuarios a tomar decisiones informadas sobre sus tarifas de luz y el uso de energía solar. 💡🔧
+    Al seguir esta metodología, hemos creado una herramienta poderosa que puede ayudar a los usuarios a tomar decisiones informadas sobre sus tarifas de luz y el uso de energía solar. 🌞🔋
     """)
 
 # Sección de Visualizaciones
 elif seccion == "Visualizaciones":
-    st.header("Visualizaciones")
-    st.write("Seleccione el gráfico que desea ver:")
+    st.header("📊 Visualizaciones 📊")
+    st.write("""
+    Bienvenido a la sección de visualizaciones. Aquí podrás explorar diferentes gráficos que te ayudarán a entender mejor los datos relacionados con las tarifas de luz y la energía solar. 📈📉
+
+    Selecciona el gráfico que deseas ver a continuación y obtén una visión detallada de la información. ¡Esperamos que estas visualizaciones te sean útiles para tomar decisiones informadas! 💡🔍
+    """)
 
     # Menú de selección de gráficos
     grafico_seleccionado = st.selectbox("Seleccione un gráfico", [
@@ -185,21 +188,183 @@ elif seccion == "Recomendador":
     st.header("Recomendador")
 
     st.write("""
-    Ingrese sus datos a continuación para obtener recomendaciones personalizadas de tarifas de luz y placas solares.
+    🌞 **¡Bienvenido al Recomendador de Tarifas de Luz y Placas Solares!** 🌞
+
+    Por favor, complete el siguiente formulario para recibir recomendaciones personalizadas que le ayudarán a ahorrar en su factura de electricidad y a aprovechar la energía solar de manera eficiente. 💡🔋
+
+    **¡Hagamos un mundo más sostenible juntos!** 🌍✨
     """)
 
-    # Formulario para ingresar datos del usuario
-    consumo_mensual = st.number_input("Consumo mensual (kWh)", min_value=0)
-    potencia_contratada = st.number_input("Potencia contratada (kW)", min_value=0.0, step=0.1)
-    horas_sol = st.number_input("Horas de sol al día", min_value=0.0, step=0.1)
-    superficie_placas = st.number_input("Superficie disponible para placas (m²)", min_value=0.0, step=0.1)
+    # Función para cargar tarifas desde un archivo CSV
 
-    # Datos de tarifas de ejemplo
-    tarifas = {
-        "Tarifa 1": {"precio_energia": 0.15, "precio_potencia": 0.10},
-        "Tarifa 2": {"precio_energia": 0.20, "precio_potencia": 0.08},
-        "Tarifa 3": {"precio_energia": 0.18, "precio_potencia": 0.09},
+    import csv
+    def cargar_tarifas():
+        tarifas = []
+        with open(os.path.join(current_dir, 'tarifas_nosolar.csv'), 'r') as archivo_csv:
+            lector = csv.DictReader(archivo_csv)
+            for fila in lector:
+                tarifa = {
+                    "compañia": fila['Empresa'],
+                    "nombre": fila['Tarifa'],
+                    "punta": float(fila['Punta']),
+                    "llano": float(fila['Llano']),
+                    "valle": float(fila['Valle']),
+                    "P1": float(fila['P1']) if 'P1' in fila else 0,
+                    "P3": float(fila['P3']) if 'P3' in fila else 0,
+                    "batería": 0
+                }
+                tarifas.append(tarifa)
+        return tarifas
+
+    def obtener_incremento_por_habitante(num_personas):
+        if num_personas == 1:
+            return 1.0
+        elif num_personas == 2:
+            return 1.25
+        elif num_personas == 3:
+            return 1.45
+        elif num_personas == 4:
+            return 1.60
+        else:
+            return 1.60 + 0.1 * (num_personas - 4)
+
+    # Función para ajustar el consumo en función del número de habitantes
+    def ajustar_consumo_por_habitantes(consumo, num_personas):
+        incremento = obtener_incremento_por_habitante(num_personas)
+        return consumo * incremento
+
+    # Diccionario de meses y días
+    dias_por_mes = {
+        "enero": 31, "febrero": 28, "marzo": 31, "abril": 30,
+        "mayo": 31, "junio": 30, "julio": 31, "agosto": 31,
+        "septiembre": 30, "octubre": 31, "noviembre": 30, "diciembre": 31
     }
+
+    # Comparativa de tarifas
+    def calcular_mejor_tarifa(datos_consumo, tarifas):
+        mes = datos_consumo["mes"]
+        if mes is None:
+            st.error("El mes no ha sido proporcionado correctamente.")
+            return
+        dias = dias_por_mes.get(mes.lower(), 30)  # Usar 30 días si el mes es inválido o no está en el diccionario
+        excedentes = 0
+        potencia = datos_consumo['potencia']
+        iva = 1.21
+        bono_social = 0.006282
+        impuesto = 3.8 / 100
+        equipos = 0.82
+
+        comparativa = []
+        for empresa in tarifas:
+            consumo_total = (empresa["punta"] * datos_consumo["punta"] +
+                             empresa["llano"] * datos_consumo["llano"] +
+                             empresa["valle"] * datos_consumo["valle"])
+            potencia_total = potencia * dias * (empresa["P1"] + empresa["P3"])
+            
+            precionormal = ((potencia_total + bono_social * dias + consumo_total) * (1 + impuesto) +
+                            equipos) * iva 
+            
+            calculado = {
+                "Empresa": empresa["compañia"],
+                "Tarifa": empresa["nombre"],
+                "Precio": precionormal
+            }
+            comparativa.append(calculado)
+
+        comparativa.sort(key=lambda x: x["Precio"])
+        mejor_tarifa = comparativa[0]
+
+        st.write("\nComparativa de tarifas:")
+        for tarifa in comparativa:
+            st.write(f"{tarifa['Empresa']} - {tarifa['Tarifa']}: {tarifa['Precio']:.2f} €")
+
+        st.write(f"\nLa tarifa más económica es la de {mejor_tarifa['Empresa']} - {mejor_tarifa['Tarifa']} con un precio de {mejor_tarifa['Precio']:.2f} €.")
+
+    # Formulario para ingresar datos del usuario
+    st.header("Formulario de Consumo")
+    mes = st.selectbox("¿Para qué mes deseas hacer la comparativa?", list(dias_por_mes.keys()))
+    provincia = st.text_input("¿En qué provincia te encuentras?")
+    num_personas = st.number_input("¿Cuántas personas viven en tu domicilio?", min_value=1, step=1)
+
+    conoce_consumo = st.radio("¿Conoces tu consumo en kWh para los periodos de Valle, Llano y Punta?", ('Sí', 'No'))
+
+    if conoce_consumo == 'Sí':
+        consumo_valle = st.number_input("Introduce tu consumo en kWh para el periodo Valle:", min_value=0.0, step=0.1)
+        consumo_llano = st.number_input("Introduce tu consumo en kWh para el periodo Llano:", min_value=0.0, step=0.1)
+        consumo_punta = st.number_input("Introduce tu consumo en kWh para el periodo Punta:", min_value=0.0, step=0.1)
+        potencia = st.number_input("Introduce tu potencia en kW:", min_value=0.0, step=0.1)
+
+        # Mostrar gráfico de franjas horarias
+        discriminacion = {
+            "00": 'valle', "01": 'valle', "02": 'valle', "03": 'valle',
+            "04": 'valle', "05": 'valle', "06": 'valle', "07": 'valle',
+            "08": 'llano', "09": 'llano', "10": 'punta', "11": 'punta',
+            "12": 'punta', "13": 'punta', "14": 'llano', "15": 'llano',
+            "16": 'llano', "17": 'llano', "18": 'punta', "19": 'punta',
+            "20": 'punta', "21": 'punta', "22": 'llano', "23": 'llano',
+        }
+
+        # Crear un pie chart simulando las 24 horas de un reloj
+        labels = list(discriminacion.keys())
+        sizes = [1] * 24  # Cada hora tiene el mismo tamaño
+        colors = ['#2ca02c' if discriminacion[hora] == 'valle' else '#ffdd44' if discriminacion[hora] == 'llano' else '#d62728' for hora in labels]
+
+        fig, ax = plt.subplots(figsize=(6, 6))  # Ajustar el tamaño del gráfico
+        ax.pie(sizes, labels=labels, colors=colors, startangle=90, counterclock=False)
+        ax.axis('equal')  # Para asegurar que el pie chart es un círculo
+        ax.set_title('Distribución de las Franjas Horarias', pad=20)  # Ajustar el padding del título
+
+        # Añadir leyenda
+        custom_lines = [plt.Line2D([0], [0], color='#2ca02c', lw=4),
+                        plt.Line2D([0], [0], color='#ffdd44', lw=4),
+                        plt.Line2D([0], [0], color='#d62728', lw=4)]
+        ax.legend(custom_lines, ['Valle', 'Llano', 'Punta'], loc='upper right', bbox_to_anchor=(1.1, 1), fontsize='x-small')
+
+        st.pyplot(fig)
+
+        # Ajustar el consumo en función del número de habitantes
+        consumo_valle = ajustar_consumo_por_habitantes(consumo_valle, num_personas)
+        consumo_llano = ajustar_consumo_por_habitantes(consumo_llano, num_personas)
+        consumo_punta = ajustar_consumo_por_habitantes(consumo_punta, num_personas)
+        
+        datos_consumo = {"valle": consumo_valle, "llano": consumo_llano, "punta": consumo_punta, "potencia": potencia, "mes": mes}
+
+    elif conoce_consumo == 'No':
+        consumo_estimado = 0
+        electrodomesticos = {
+            "Frigorífico": 1.2, "Lavadora": 0.9, "Lavavajillas": 0.85,
+            "Televisor": 0.2, "Aire Acondicionado": 3.0, "Vitroceramica": 1.5,
+            "Horno": 1.0, "Calefactores eléctricos": 2.0, "Microondas": 0.2,
+            "Ordenador": 0.5, "Plancha de ropa": 0.3, "Algún otro electrodomestico": 0.5
+        }
+        
+        st.write("Vamos a estimar tu consumo. Por favor, indica si tienes los siguientes electrodomésticos:")
+        for electrodomestico, consumo in electrodomesticos.items():
+            respuesta = st.radio(f"¿Tienes {electrodomestico}?", ('Sí', 'No'))
+            if respuesta == 'Sí':
+                consumo_estimado += consumo
+
+        consumo_valle = consumo_estimado * 0.4 * 30
+        consumo_llano = consumo_estimado * 0.3 * 30
+        consumo_punta = consumo_estimado * 0.3 * 30
+        potencia = st.number_input("Introduce tu potencia en kW:", min_value=0.0, step=0.1)
+
+        # Ajuste del consumo basado en habitantes
+        consumo_valle = ajustar_consumo_por_habitantes(consumo_valle, num_personas)
+        consumo_llano = ajustar_consumo_por_habitantes(consumo_llano, num_personas)
+        consumo_punta = ajustar_consumo_por_habitantes(consumo_punta, num_personas)
+
+        st.write("\nEstimación de consumo:")
+        st.write(f"Consumo estimado en Valle: {consumo_valle:.2f} kWh")
+        st.write(f"Consumo estimado en Llano: {consumo_llano:.2f} kWh")
+        st.write(f"Consumo estimado en Punta: {consumo_punta:.2f} kWh")
+
+        datos_consumo = {"valle": consumo_valle, "llano": consumo_llano, "punta": consumo_punta, "potencia": potencia, "mes": mes}
+
+    # Botón para calcular la mejor tarifa
+    if st.button("Calcular Mejor Tarifa"):
+        tarifas = cargar_tarifas()
+        calcular_mejor_tarifa(datos_consumo, tarifas)
 
     # Datos de placas solares de ejemplo
     placas = {
@@ -207,17 +372,6 @@ elif seccion == "Recomendador":
         "Placa 2": {"eficiencia": 0.20, "precio": 250},
         "Placa 3": {"eficiencia": 0.22, "precio": 300},
     }
-
-    # Función para recomendar tarifa
-    def recomendar_tarifa(consumo, potencia):
-        mejor_tarifa = None
-        menor_costo = float('inf')
-        for tarifa, datos in tarifas.items():
-            costo = consumo * datos["precio_energia"] + potencia * datos["precio_potencia"]
-            if costo < menor_costo:
-                menor_costo = costo
-                mejor_tarifa = tarifa
-        return mejor_tarifa, menor_costo
 
     # Función para recomendar placas solares
     def recomendar_placas(horas_sol, superficie):
@@ -230,13 +384,13 @@ elif seccion == "Recomendador":
                 mejor_placa = placa
         return mejor_placa, mayor_energia
 
+    # Formulario para ingresar datos del usuario
+    horas_sol = st.number_input("Horas de sol al día", min_value=0.0, step=0.1)
+    superficie_placas = st.number_input("Superficie disponible para placas (m²)", min_value=0.0, step=0.1)
+
     # Mostrar recomendaciones
-    if st.button("Recomendar"):
-        tarifa, costo = recomendar_tarifa(consumo_mensual, potencia_contratada)
+    if st.button("Recomendar Placas Solares"):
         placa, energia = recomendar_placas(horas_sol, superficie_placas)
-        
-        st.subheader("Recomendación de Tarifa de Luz")
-        st.write(f"La mejor tarifa para usted es: **{tarifa}** con un costo mensual estimado de **{costo:.2f} €**.")
         
         st.subheader("Recomendación de Placas Solares")
         st.write(f"La mejor placa solar para usted es: **{placa}** que generará aproximadamente **{energia:.2f} kWh** al día.")
