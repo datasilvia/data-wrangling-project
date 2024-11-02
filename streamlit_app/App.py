@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import requests
+import calendar
 
 # Obtener la ruta absoluta del directorio actual
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -370,32 +372,26 @@ elif seccion == "Recomendador":
         interes_placas = st.radio("¿Te interesa saber si te compensa poner placas solares?", ('Sí', 'No'))
 
         if interes_placas == 'Sí':
-            # Obtener la ruta absoluta del directorio actual
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            
-            # Función para cargar datos solares
-            def cargar_datos_solares():
-                archivo_csv_path = os.path.join(current_dir, 'datos_solares.csv')
-                if not os.path.exists(archivo_csv_path):
-                    st.error(f"El archivo {archivo_csv_path} no existe.")
-                    return None
-                dfsolar = pd.read_csv('datos_solares.csv').drop_duplicates().drop(0).reset_index(drop=True)
-                dfsolar.columns = ['Ciudad', 'Horas de sol', 'Irradiación']
-                dfsolar['Horas de sol'] = dfsolar['Horas de sol'].astype(float) * 1000
-
-                # Convierte los valores de la columna a float
-                dfsolar['Irradiación'] = dfsolar['Irradiación'].str.replace(' kWh/m2día', '')
-                dfsolar['Irradiación'] = dfsolar['Irradiación'].str.replace(',', '.')
-                return dfsolar
 
             # Función para sacar datos horarios por provincia
             def sacar_datos_horarios(ciudad):
+                ciudad = ciudad.capitalize()  # Asegurarse de que la primera letra de la ciudad esté en mayúscula
                 url = f'https://cdn.mitma.gob.es/portal-web-drupal/salidapuestasol/2024/{ciudad}-2024.txt'
                 response = requests.get(url)
                 response.encoding = 'ISO-8859-1'
                 content = response.text
-                lines = content.splitlines()[4:6] + content.splitlines()[7:]
+
+                # Mostrar la URL y las primeras líneas del contenido para depuración
+                st.write(f"URL: {url}")
+                st.write("Primeras líneas del contenido descargado:")
+                st.write(content.splitlines()[:10])
+
+                lines = content.splitlines()[7:]  # Saltar las primeras 7 líneas de encabezado
                 data = [line.split() for line in lines]
+
+                # Mostrar las primeras líneas de los datos para depuración
+                st.write("Primeras líneas de los datos procesados:")
+                st.write(data[:10])
 
                 def adjust_days(data):
                     for sublist in data:
@@ -421,9 +417,24 @@ elif seccion == "Recomendador":
                 columnas = ['Dia', 'Ene_Ort', 'Ene_Ocas', 'Feb_Ort', 'Feb_Ocas', 'Mar_Ort', 'Mar_Ocas', 'Apr_Ort', 'Apr_Ocas',
                             'May_Ort', 'May_Ocas', 'Jun_Ort', 'Jun_Ocas', 'Jul_Ort', 'Jul_Ocas', 'Aug_Ort', 'Aug_Ocas',
                             'Sep_Ort', 'Sep_Ocas', 'Oct_Ort', 'Oct_Ocas', 'Nov_Ort', 'Nov_Ocas', 'Dec_Ort', 'Dec_Ocas']
-                df = pd.DataFrame(data).iloc[:-4].dropna(axis=1, how='all')
-                df.columns = columnas
-                df = df.iloc[2:].reset_index(drop=True)
+                
+                # Verificar si data no está vacío y si el número de columnas coincide con el esperado
+                if not data:
+                    st.error("Los datos descargados están vacíos.")
+                    return None
+                if len(data[0]) != len(columnas):
+                    st.error(f"El número de columnas no coincide con el esperado. Esperado: {len(columnas)}, Obtenido: {len(data[0])}")
+                    st.write("Contenido de data[0]:")
+                    st.write(data[0])
+                    return None
+
+                try:
+                    df = pd.DataFrame(data).iloc[:-4].dropna(axis=1, how='all')
+                    df.columns = columnas
+                    df = df.iloc[2:].reset_index(drop=True)
+                except Exception as e:
+                    st.error(f"Error al crear el DataFrame: {e}")
+                    return None
 
                 def format_time(value):
                     if isinstance(value, str):
@@ -432,25 +443,39 @@ elif seccion == "Recomendador":
                         value = value[:-2] + ':' + value[-2:]
                     return value
 
-                df.iloc[:, 1:] = df.iloc[:, 1:].applymap(format_time)
-                for col in df.columns[1:]:
-                    df[col] = pd.to_timedelta(df[col] + ':00')
+                try:
+                    df.iloc[:, 1:] = df.iloc[:, 1:].applymap(format_time)
+                    for col in df.columns[1:]:
+                        df[col] = pd.to_timedelta(df[col] + ':00')
+                except Exception as e:
+                    st.error(f"Error al formatear las horas: {e}")
+                    return None
 
                 meses = ["Ene", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
                 nuevo_df = pd.DataFrame()
                 nuevo_df['Dia'] = df['Dia']
                 nuevo_df['Ciudad'] = ciudad
 
-                for mes in meses:
-                    nuevo_df[mes] = (df[f'{mes}_Ocas'] - df[f'{mes}_Ort']).apply(lambda x: x.total_seconds() / 3600)
+                try:
+                    for mes in meses:
+                        nuevo_df[mes] = (df[f'{mes}_Ocas'] - df[f'{mes}_Ort']).apply(lambda x: x.total_seconds() / 3600)
+                except Exception as e:
+                    st.error(f"Error al calcular las horas de sol: {e}")
+                    return None
 
                 return nuevo_df
 
             # Función para prorratear el consumo
             def prorrateo_consumo(mesecito, consumito):
                 year = 2024
-                mes = {'Ene': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
-                month = mes[mesecito]
+                mes = {
+                    'enero': 'Ene', 'febrero': 'Feb', 'marzo': 'Mar', 'abril': 'Apr', 'mayo': 'May', 'junio': 'Jun',
+                    'julio': 'Jul', 'agosto': 'Ago', 'septiembre': 'Sep', 'octubre': 'Oct', 'noviembre': 'Nov', 'diciembre': 'Dic'
+                }
+                month = mes.get(mesecito.lower())
+                if month is None:
+                    st.error(f"Mes no válido: {mesecito}")
+                    return None
 
                 discriminacion = {
                     "00": 'valle', "01": 'valle', "02": 'valle', "03": 'valle',
@@ -478,13 +503,16 @@ elif seccion == "Recomendador":
 
             # Función para calcular el número de placas solares
             def calcular_placas(ciudad, mes, potencia, consumo):
-                dfsolar = cargar_datos_solares()
                 consumo_total = prorrateo_consumo(mes, consumo)
+                if consumo_total is None:
+                    return "No se pudo prorratear el consumo debido a un mes no válido."
                 df_ciudad = sacar_datos_horarios(ciudad)
+                if df_ciudad is None:
+                    return "No se pudo obtener los datos horarios para la ciudad especificada."
 
                 factor_solar = 0.8
                 pot_placa = 0.455
-                dias = {'Ene': 31, 'Feb': 29, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30, 'Jul': 31, 'Aug': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dec': 31}
+                dias = {'Ene': 31, 'Feb': 29, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30, 'Jul': 31, 'Ago': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dic': 31}
 
                 meses = df_ciudad.columns.difference(['Dia', 'Ciudad'])
                 horas_sol = {mes: df_ciudad[mes].sum() * factor_solar for mes in meses}
@@ -500,4 +528,3 @@ elif seccion == "Recomendador":
             st.write(recomendacion_placas)
         else:
             st.write("Gracias por usar esta aplicación.")
-
