@@ -366,31 +366,138 @@ elif seccion == "Recomendador":
         tarifas = cargar_tarifas()
         calcular_mejor_tarifa(datos_consumo, tarifas)
 
-    # Datos de placas solares de ejemplo
-    placas = {
-        "Placa 1": {"eficiencia": 0.18, "precio": 200},
-        "Placa 2": {"eficiencia": 0.20, "precio": 250},
-        "Placa 3": {"eficiencia": 0.22, "precio": 300},
-    }
+        # Preguntar al usuario si le interesa saber si le compensa poner placas solares
+        interes_placas = st.radio("¿Te interesa saber si te compensa poner placas solares?", ('Sí', 'No'))
 
-    # Función para recomendar placas solares
-    def recomendar_placas(horas_sol, superficie):
-        mejor_placa = None
-        mayor_energia = 0
-        for placa, datos in placas.items():
-            energia_generada = horas_sol * superficie * datos["eficiencia"]
-            if energia_generada > mayor_energia:
-                mayor_energia = energia_generada
-                mejor_placa = placa
-        return mejor_placa, mayor_energia
+        if interes_placas == 'Sí':
+            # Obtener la ruta absoluta del directorio actual
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            
+            # Función para cargar datos solares
+            def cargar_datos_solares():
+                archivo_csv_path = os.path.join(current_dir, 'datos_solares.csv')
+                if not os.path.exists(archivo_csv_path):
+                    st.error(f"El archivo {archivo_csv_path} no existe.")
+                    return None
+                dfsolar = pd.read_csv('datos_solares.csv').drop_duplicates().drop(0).reset_index(drop=True)
+                dfsolar.columns = ['Ciudad', 'Horas de sol', 'Irradiación']
+                dfsolar['Horas de sol'] = dfsolar['Horas de sol'].astype(float) * 1000
 
-    # Formulario para ingresar datos del usuario
-    horas_sol = st.number_input("Horas de sol al día", min_value=0.0, step=0.1)
-    superficie_placas = st.number_input("Superficie disponible para placas (m²)", min_value=0.0, step=0.1)
+                # Convierte los valores de la columna a float
+                dfsolar['Irradiación'] = dfsolar['Irradiación'].str.replace(' kWh/m2día', '')
+                dfsolar['Irradiación'] = dfsolar['Irradiación'].str.replace(',', '.')
+                return dfsolar
 
-    # Mostrar recomendaciones
-    if st.button("Recomendar Placas Solares"):
-        placa, energia = recomendar_placas(horas_sol, superficie_placas)
-        
-        st.subheader("Recomendación de Placas Solares")
-        st.write(f"La mejor placa solar para usted es: **{placa}** que generará aproximadamente **{energia:.2f} kWh** al día.")
+            # Función para sacar datos horarios por provincia
+            def sacar_datos_horarios(ciudad):
+                url = f'https://cdn.mitma.gob.es/portal-web-drupal/salidapuestasol/2024/{ciudad}-2024.txt'
+                response = requests.get(url)
+                response.encoding = 'ISO-8859-1'
+                content = response.text
+                lines = content.splitlines()[4:6] + content.splitlines()[7:]
+                data = [line.split() for line in lines]
+
+                def adjust_days(data):
+                    for sublist in data:
+                        if not sublist:
+                            continue
+                        elif sublist[0] == '30':
+                            sublist.insert(3, '0000')
+                            sublist.insert(4, '0000')
+                        elif sublist[0] == '31':
+                            sublist.insert(3, '0000')
+                            sublist.insert(4, '0000')
+                            sublist.insert(7, '0000')
+                            sublist.insert(8, '0000')
+                            sublist.insert(11, '0000')
+                            sublist.insert(12, '0000')
+                            sublist.insert(17, '0000')
+                            sublist.insert(18, '0000')
+                            sublist.insert(21, '0000')
+                            sublist.insert(22, '0000')
+                    return data
+
+                data = adjust_days(data)
+                columnas = ['Dia', 'Ene_Ort', 'Ene_Ocas', 'Feb_Ort', 'Feb_Ocas', 'Mar_Ort', 'Mar_Ocas', 'Apr_Ort', 'Apr_Ocas',
+                            'May_Ort', 'May_Ocas', 'Jun_Ort', 'Jun_Ocas', 'Jul_Ort', 'Jul_Ocas', 'Aug_Ort', 'Aug_Ocas',
+                            'Sep_Ort', 'Sep_Ocas', 'Oct_Ort', 'Oct_Ocas', 'Nov_Ort', 'Nov_Ocas', 'Dec_Ort', 'Dec_Ocas']
+                df = pd.DataFrame(data).iloc[:-4].dropna(axis=1, how='all')
+                df.columns = columnas
+                df = df.iloc[2:].reset_index(drop=True)
+
+                def format_time(value):
+                    if isinstance(value, str):
+                        if len(value) == 3:
+                            value = '0' + value
+                        value = value[:-2] + ':' + value[-2:]
+                    return value
+
+                df.iloc[:, 1:] = df.iloc[:, 1:].applymap(format_time)
+                for col in df.columns[1:]:
+                    df[col] = pd.to_timedelta(df[col] + ':00')
+
+                meses = ["Ene", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+                nuevo_df = pd.DataFrame()
+                nuevo_df['Dia'] = df['Dia']
+                nuevo_df['Ciudad'] = ciudad
+
+                for mes in meses:
+                    nuevo_df[mes] = (df[f'{mes}_Ocas'] - df[f'{mes}_Ort']).apply(lambda x: x.total_seconds() / 3600)
+
+                return nuevo_df
+
+            # Función para prorratear el consumo
+            def prorrateo_consumo(mesecito, consumito):
+                year = 2024
+                mes = {'Ene': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
+                month = mes[mesecito]
+
+                discriminacion = {
+                    "00": 'valle', "01": 'valle', "02": 'valle', "03": 'valle',
+                    "04": 'valle', "05": 'valle', "06": 'valle', "07": 'valle',
+                    "08": 'llano', "09": 'llano', "10": 'punta', "11": 'punta',
+                    "12": 'punta', "13": 'punta', "14": 'llano', "15": 'llano',
+                    "16": 'llano', "17": 'llano', "18": 'punta', "19": 'punta',
+                    "20": 'punta', "21": 'punta', "22": 'llano', "23": 'llano',
+                }
+
+                horas_llano_lab = sum(1 for h in discriminacion if discriminacion[h] == 'llano')
+                horas_punta_lab = sum(1 for h in discriminacion if discriminacion[h] == 'punta')
+                num_dias_mes = calendar.monthrange(year, month)[1]
+                dias_finde = sum(1 for d in range(1, num_dias_mes + 1) if calendar.weekday(year, month, d) >= 5)
+                dias_laborables = num_dias_mes - dias_finde
+                horas_llano_totales = horas_llano_lab * dias_laborables
+                horas_punta_totales = horas_punta_lab * dias_laborables
+
+                c_p = consumito[0] * 8 / horas_punta_totales
+                c_l = consumito[1] * 8 / horas_llano_totales
+                c_v = (sum(consumito) - c_p * num_dias_mes - c_l * num_dias_mes) / num_dias_mes
+
+                c_totales = [c_p * num_dias_mes, c_l * num_dias_mes, c_v * num_dias_mes]
+                return c_totales
+
+            # Función para calcular el número de placas solares
+            def calcular_placas(ciudad, mes, potencia, consumo):
+                dfsolar = cargar_datos_solares()
+                consumo_total = prorrateo_consumo(mes, consumo)
+                df_ciudad = sacar_datos_horarios(ciudad)
+
+                factor_solar = 0.8
+                pot_placa = 0.455
+                dias = {'Ene': 31, 'Feb': 29, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30, 'Jul': 31, 'Aug': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dec': 31}
+
+                meses = df_ciudad.columns.difference(['Dia', 'Ciudad'])
+                horas_sol = {mes: df_ciudad[mes].sum() * factor_solar for mes in meses}
+                c_total = sum(consumo_total)
+                n_placas = int(c_total / (pot_placa * 0.7 * horas_sol[mes] * 0.8))
+
+                if n_placas < 2:
+                    return "Tu consumo es muy bajo para poder beneficiarte de una instalación de placas solares. ¡Gracias por ser un consumidor eficiente!"
+                else:
+                    return f"Con los datos de consumo suministrados, ¡Te podría interesar instalar hasta {n_placas} placas! Ten en cuenta que la mejor estimación del número de placas se realiza con el consumo en verano, además de ser donde te beneficiarás del mayor ahorro."
+
+            recomendacion_placas = calcular_placas(provincia, mes, datos_consumo["potencia"], [datos_consumo["punta"], datos_consumo["llano"], datos_consumo["valle"]])
+            st.write(recomendacion_placas)
+        else:
+            st.write("Gracias por usar esta aplicación.")
+
