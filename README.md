@@ -56,6 +56,17 @@ The summary report includes:
 We used Trello for project management, allowing us to track our progress and collaborate effectively. Our Trello board included tasks for data collection, data wrangling, model development, and user interface design.
 
 ## 🗂️ Project Structure
+  - **app_logic/**
+  - **data/**
+  - **data_cleaning/**
+  - **data_extraction/**
+  - **data_visualization/**
+  - **project_presentation/**
+  - **streamlit_app/**
+  - **summary_report/**
+  - .gitignore
+  - requirements.txt
+  - README.md
 
 ## 🌐 Streamlit App
 The Streamlit app has the following structure:
