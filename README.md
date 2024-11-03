@@ -77,7 +77,6 @@ The Streamlit app has the following structure:
 - **Electric Tariff Recommender**: Tool to recommend the best electric tariffs.
 - **Solar Panel Tariff Recommender**: Tool to recommend the best solar panel tariffs.
 
-You can access the Streamlit app [here](https://electric-and-solar-tariff-project-frqeoxrv7dhqqctpc5d3as.streamlit.app/)
 
 ## 🎥 Project Presentation
 A pdf presentation of the project is available [here](#).
