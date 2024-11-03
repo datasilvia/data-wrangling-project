@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
-import requests
-import calendar
+
 
 # Obtener la ruta absoluta del directorio actual
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +18,7 @@ st.sidebar.image(os.path.join(current_dir, "octocat.jpg"), use_column_width=True
 
 # Menú de navegación
 st.sidebar.header("Menú de Navegación")
-seccion = st.sidebar.radio("Ir a", ["Introducción", "Objetivos", "Metodología", "Visualizaciones", "Recomendador", "Recomendador Solar"])
+seccion = st.sidebar.radio("Ir a", ["Introducción", "Objetivos", "Metodología", "Visualizaciones", "Recomendador Tarifas Eléctricas", "Recomendador Placas Solares"])
 
 # Sección de Introducción
 if seccion == "Introducción":
@@ -186,8 +185,8 @@ elif seccion == "Visualizaciones":
         st.write("Este gráfico muestra las ciudades con menos horas de sol al año. Las horas de sol son un factor importante a considerar al instalar placas solares. Este gráfico permite identificar las ciudades menos favorables para la instalación de placas solares.")
 
 # Sección de Recomendador
-elif seccion == "Recomendador":
-    st.header("Recomendador")
+elif seccion == "Recomendador Tarifas Eléctricas":
+    st.header("Recomendador Tarifas Eléctricas")
 
     st.write("""
     🌞 **¡Bienvenido al Recomendador de Tarifas de Luz y Placas Solares!** 🌞
@@ -368,8 +367,8 @@ elif seccion == "Recomendador":
 
 
 # Sección de Recomendador Solar
-elif seccion == "Recomendador Solar":
-    st.header("Recomendador Solar")
+elif seccion == "Recomendador Placas Solares":
+    st.header("Recomendador Placas Solares")
 
     st.write("""
     🌞 **¡Bienvenido al Recomendador de Placas Solares!** 🌞
@@ -506,7 +505,7 @@ elif seccion == "Recomendador Solar":
             df = pd.read_csv("datos_provincias.csv")
             df.columns = ['Dia', 'Ciudad', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto',
             'septiembre', 'octubre', 'noviembre', 'diciembre']
-            st.dataframe(df)
+            
             df["Ciudad"] = df["Ciudad"].str.lower()
             nuevo_df = df[df['Ciudad'] == ciudad.lower()]
 
@@ -528,8 +527,6 @@ elif seccion == "Recomendador Solar":
         # Crear el diccionario para almacenar las sumas mensuales
         meses = df_ciudad.columns.difference(['Dia', 'Ciudad'])
         horas_sol = {mes: df_ciudad[mes].sum() * factor_solar for mes in meses}
-        print(horas_sol)
-        print(df_ciudad)
         porcen_sol = {mes: round(df_ciudad[mes].sum() * factor_solar / (dias[mes] * 24), 2) for mes in meses}
         # Aproximadamente entre el 40% y el 50% de luz al día. 
 
@@ -541,9 +538,6 @@ elif seccion == "Recomendador Solar":
 
         # El consumo anual de energía por parte del consumidor debe ser igual o mayor al 80 % de la energía anual generada por la instalación.
         c_total = sum(consumo_total)
-        print(c_total)
-        print(pot_placa)
-        print(horas_sol[mes])
         n_placas = int(c_total / (pot_placa * 0.7 * horas_sol[mes] * 0.8))
         if n_placas < 2:
             st.write('''Tu consumo es muy bajo para poder beneficiarte de una instalación de placas solares.
@@ -552,3 +546,70 @@ elif seccion == "Recomendador Solar":
             st.write(f'Con los datos de consumo suministrados, ¡Te podría interesar instalar hasta {n_placas} placas!')
             st.write('''Ten en cuenta que la mejor estimación del número de placas se realiza con el consumo en verano, 
                 además de ser donde te beneficiarás del mayor ahorro.''')
+            
+            # AHORRO PLACAS
+            e_generada = n_placas * pot_placa * 0.7 * horas_sol[mes]
+
+            # La energia generada no afecta al periodo valle y sólo afecta al 50% del periodo llano:
+            datos_consumo = {
+                'Punta': max(0, consumo_total[0] - e_generada * 2 / 3),
+                'Llano': max(0, consumo_total[1] - e_generada * 1 / 3),
+                'Valle': consumo_total[2],
+                'Excedentes': min(0, consumo_total[0] - e_generada * 2 / 3) + min(0, consumo_total[1] - e_generada * 1 / 3),
+                'Dias': dias[mes],
+                'Potencia': potencia
+            }
+
+            # TARIFA SOLAR
+            # Una vez conocidos los consumos con las placas, obtenemos el precio con las tarifas solares:
+            df_solar = pd.read_csv("tarifas_solar.csv")
+
+            def calcular_mejor_tarifa(consumo):
+                # Parámetros
+                iva = 1.21
+                bono_social = 0.006282
+                impuesto = 3.8 / 100
+                equipos = 0.82
+
+                df = pd.read_csv("tarifas_solar.csv")
+                # Crear un DataFrame con los resultados
+                resultado_df = df[['Empresa', 'Tarifa']].copy()
+                
+                consumo_total = (df['Punta'] * consumo['Punta'] +
+                                df['Llano'] * consumo['Llano'] +
+                                df['Valle'] * consumo['Valle'])
+                resultado_df['Consumo'] = consumo_total
+                excedentes_total = df['Excedentes'] * consumo['Excedentes']
+                resultado_df['Excedentes'] = excedentes_total
+                potencia_total = (df['P1'] + df['P3']) * consumo['Potencia'] * consumo['Dias']
+                resultado_df['Potencia'] = potencia_total
+                precio_bat = ((potencia_total + bono_social * consumo['Dias'] + consumo_total) * (1 + impuesto) +
+                            equipos + df["Bateria"] * consumo['Dias'] / 30) * iva + excedentes_total
+                resultado_df['Precio con Bateria'] = precio_bat
+                consumo_total_nobat = (consumo_total + excedentes_total).clip(lower=0)
+                precio_nobat = ((potencia_total + bono_social * consumo['Dias'] + consumo_total_nobat) * (1 + impuesto) +
+                                equipos) * iva
+                resultado_df['Precio sin Bateria'] = precio_nobat
+
+                # Crear columna precio con las condiciones reales de cada compañía
+                resultado_df['Precio'] = resultado_df.apply(
+                    lambda row: row['Precio sin Bateria'] if row['Empresa'] == 'Naturgy' else row['Precio con Bateria'], axis=1)
+                
+                df_sorted = resultado_df.sort_values(by='Precio', ascending=True)
+                mejor_tarifa = df_sorted.iloc[0]
+
+
+                st.write("\nComparativa de tarifas:")
+                for _, tarifa in df_sorted.iterrows():  # Usamos iterrows para iterar sobre las filas
+                    st.write(f"{tarifa['Empresa']} - {tarifa['Tarifa']}: {tarifa['Precio']:.2f} €")
+
+                st.write(f"\nLa tarifa más económica es la de {mejor_tarifa['Empresa']} - {mejor_tarifa['Tarifa']} con un precio de {mejor_tarifa['Precio']:.2f} €.")
+
+                return mejor_tarifa
+
+        # Llamar a la función 
+        tarifas = calcular_mejor_tarifa(datos_consumo)
+        st.write(tarifas)
+        
+
+        
