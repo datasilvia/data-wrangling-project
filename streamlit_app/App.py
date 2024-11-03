@@ -607,9 +607,9 @@ elif seccion == "Recomendador Placas Solares":
 
                 return mejor_tarifa
 
-        # Llamar a la función 
-        tarifas = calcular_mejor_tarifa(datos_consumo)
-        st.write(tarifas)
+            # Llamar a la función 
+            tarifas = calcular_mejor_tarifa(datos_consumo)
+            st.write(tarifas)
         
 
         
