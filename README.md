@@ -1,6 +1,6 @@
 # ⚡🔋 Electric and Solar Tariff Recommender 🔋⚡
 
-![Descripción de la imagen](streamlit_app/image.jpg)
+![An electric bulb and several piles of coins](streamlit_app/image.jpg "You can save money choosing the best tariff")
 
 ## 📋 Objective
 The goal of this project is to provide personalized recommendations for solar panel installations in homes, helping users to save on their electricity bills and contribute to a more sustainable world. 🌍✨
@@ -54,6 +54,8 @@ The summary report includes:
 
 ## 🗂️ Trello Board
 We used Trello for project management, allowing us to track our progress and collaborate effectively. Our Trello board included tasks for data collection, data wrangling, model development, and user interface design.
+![Trello](/images/Trello.png "Trello Board for project management")
+
 
 ## 🗂️ Project Structure
   - **app_logic/**
@@ -61,6 +63,7 @@ We used Trello for project management, allowing us to track our progress and col
   - **data_cleaning/**
   - **data_extraction/**
   - **data_visualization/**
+  - **images/**
   - **project_presentation/**
   - **streamlit_app/**
   - **summary_report/**
@@ -77,9 +80,20 @@ The Streamlit app has the following structure:
 - **Electric Tariff Recommender**: Tool to recommend the best electric tariffs.
 - **Solar Panel Tariff Recommender**: Tool to recommend the best solar panel tariffs.
 
+![Aplication menu](/images/menu.jpg "Side menu of the app") ![Graphic](/images/visualizacion.jpg "Visualization of the data") ![Tariffs](/images/tarifas.jpg "Users write their data to obtain a recomendation")
+
 
 ## 🎥 Project Presentation
 A pdf presentation of the project is available [here](#).
+
+##  📊 Data Sources
+
+- **Naturgy**: [Naturgy](https://www.naturgy.es/hogar)
+- **Octopus**: [Octopus](https://octopusenergy.es/precios)
+- **Repsol**: [Repsol](https://www.repsol.es/particulares/)
+- **Xenera**: [Xenera](https://xenera.com/)
+- **Horas de sol por provincia**: [Horas de sol por provincia](https://greenlifesolutions.es/blog/horas-de-sol-anuales-por-comunidad-autonoma/)
+- **Salida y puesta del sol**: [salida y puesta del sol](https://astronomia.ign.es/hora-salidas-y-puestas-de-sol)
 
 ## 👥 Project Members
 
@@ -93,3 +107,5 @@ A pdf presentation of the project is available [here](#).
 ## 🤝 Collaborations and Suggestions
 We welcome collaborations and suggestions! Feel free to open an issue or submit a pull request. 
 
+![A Vaquiña](/images/cow.png "This friendly cow is from Xenera, one of the companies we studied, from Galicia, the land of Juan, our master data scrapper and app deployer.")
+![Octocat](/images/octocat.jpg "Octocat likes to save money and help the environment with the best electricity rate and solar panels")
