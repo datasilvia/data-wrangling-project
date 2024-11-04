@@ -564,7 +564,9 @@ elif seccion == "Recomendador Placas Solares":
 
             # TARIFA SOLAR
             # Una vez conocidos los consumos con las placas, obtenemos el precio con las tarifas solares:
-            df_solar = pd.read_csv("tarifas_solar.csv")
+            #df_solar = pd.read_csv("tarifas_solar.csv")
+            df_solar = pd.read_csv("/mount/src/data-wrangling-project/streamlit_app/tarifas_solar.csv")
+
 
             def calcular_mejor_tarifa(consumo):
                 # Parámetros
