@@ -504,7 +504,16 @@ elif seccion == "Recomendador Placas Solares":
         def leer_datos_horarios(ciudad):    
             #df = pd.read_csv("datos_provincias.csv")
             #df = pd.read_csv("./datos_provincias.csv")
-            df = pd.read_csv("/mount/src/data-wrangling-project/streamlit_app/datos_provincias.csv")
+            #df = pd.read_csv("/mount/src/data-wrangling-project/streamlit_app/datos_provincias.csv")
+            
+              # Verificar la existencia de 'datos_provincias.csv' en la ruta de Streamlit Cloud o local
+            if os.path.exists("/mount/src/data-wrangling-project/streamlit_app/datos_provincias.csv"):
+            # Ruta en Streamlit Cloud
+                df = pd.read_csv("/mount/src/data-wrangling-project/streamlit_app/datos_provincias.csv")
+            else:
+            # Ruta en local
+                df = pd.read_csv("datos_provincias.csv")
+
             df.columns = ['Dia', 'Ciudad', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto',
             'septiembre', 'octubre', 'noviembre', 'diciembre']
             
