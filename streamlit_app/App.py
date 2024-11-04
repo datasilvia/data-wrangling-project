@@ -502,7 +502,8 @@ elif seccion == "Recomendador Placas Solares":
 
         # Función para leer datos horarios por provincia
         def leer_datos_horarios(ciudad):    
-            df = pd.read_csv("datos_provincias.csv")
+            #df = pd.read_csv("datos_provincias.csv")
+            df = pd.read_csv("./datos_provincias.csv")
             df.columns = ['Dia', 'Ciudad', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto',
             'septiembre', 'octubre', 'noviembre', 'diciembre']
             
