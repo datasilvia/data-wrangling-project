@@ -576,7 +576,13 @@ elif seccion == "Recomendador Placas Solares":
                 equipos = 0.82
 
                 #df = pd.read_csv("tarifas_solar.csv")
-                df_solar = pd.read_csv("/mount/src/data-wrangling-project/streamlit_app/tarifas_solar.csv")
+                #df_solar = pd.read_csv("/mount/src/data-wrangling-project/streamlit_app/tarifas_solar.csv")
+
+                # Ruta condicional para cargar el archivo
+                if os.path.exists("/mount/src/data-wrangling-project/streamlit_app/tarifas_solar.csv"):
+                    df_solar = pd.read_csv("/mount/src/data-wrangling-project/streamlit_app/tarifas_solar.csv")
+                else:
+                    df_solar = pd.read_csv("tarifas_solar.csv")  # Ruta local
 
                 # Crear un DataFrame con los resultados
                 resultado_df = df_solar[['Empresa', 'Tarifa']].copy()
