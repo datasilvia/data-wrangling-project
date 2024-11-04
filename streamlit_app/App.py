@@ -590,7 +590,7 @@ elif seccion == "Recomendador Placas Solares":
                 potencia_total = (df_solar['P1'] + df_solar['P3']) * consumo['Potencia'] * consumo['Dias']
                 resultado_df['Potencia'] = potencia_total
                 precio_bat = ((potencia_total + bono_social * consumo['Dias'] + consumo_total) * (1 + impuesto) +
-                            equipos + df["Bateria"] * consumo['Dias'] / 30) * iva + excedentes_total
+                            equipos + df_solar["Bateria"] * consumo['Dias'] / 30) * iva + excedentes_total
                 resultado_df['Precio con Bateria'] = precio_bat
                 consumo_total_nobat = (consumo_total + excedentes_total).clip(lower=0)
                 precio_nobat = ((potencia_total + bono_social * consumo['Dias'] + consumo_total_nobat) * (1 + impuesto) +
