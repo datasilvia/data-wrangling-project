@@ -579,15 +579,15 @@ elif seccion == "Recomendador Placas Solares":
                 df_solar = pd.read_csv("/mount/src/data-wrangling-project/streamlit_app/tarifas_solar.csv")
 
                 # Crear un DataFrame con los resultados
-                resultado_df = df[['Empresa', 'Tarifa']].copy()
+                resultado_df = df_solar[['Empresa', 'Tarifa']].copy()
                 
-                consumo_total = (df['Punta'] * consumo['Punta'] +
-                                df['Llano'] * consumo['Llano'] +
-                                df['Valle'] * consumo['Valle'])
+                consumo_total = (df_solar['Punta'] * consumo['Punta'] +
+                                df_solar['Llano'] * consumo['Llano'] +
+                                df_solar['Valle'] * consumo['Valle'])
                 resultado_df['Consumo'] = consumo_total
-                excedentes_total = df['Excedentes'] * consumo['Excedentes']
+                excedentes_total = df_solar['Excedentes'] * consumo['Excedentes']
                 resultado_df['Excedentes'] = excedentes_total
-                potencia_total = (df['P1'] + df['P3']) * consumo['Potencia'] * consumo['Dias']
+                potencia_total = (df_solar['P1'] + df_solar['P3']) * consumo['Potencia'] * consumo['Dias']
                 resultado_df['Potencia'] = potencia_total
                 precio_bat = ((potencia_total + bono_social * consumo['Dias'] + consumo_total) * (1 + impuesto) +
                             equipos + df["Bateria"] * consumo['Dias'] / 30) * iva + excedentes_total
