@@ -169,7 +169,7 @@ elif seccion == "Visualizaciones":
         st.write("Este gráfico muestra la tarifa de valle (P3) por tarifa. La tarifa de valle se aplica durante las horas de menor demanda de energía. Este gráfico permite comparar las diferentes tarifas de valle disponibles en el mercado.")
 
     elif grafico_seleccionado == "Dashboard Tarifas":
-        st.image(os.path.join(current_dir, "dashboard tarifas.png"), caption="Dashboard Tarifas", use_column_width=True)
+        st.image(os.path.join(current_dir, "dashboard_tarifas.png"), caption="Dashboard Tarifas", use_column_width=True)
         st.write("Este dashboard muestra una visión general de las tarifas de luz, incluyendo las tarifas de punta, llano y valle por diferentes empresas y tarifas. Permite una comparación rápida y visual de las diferentes opciones disponibles en el mercado.")
 
     elif grafico_seleccionado == "Potencia por Empresas":
