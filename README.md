@@ -2,6 +2,8 @@
 
 ![An electric bulb and several piles of coins](streamlit_app/image.jpg "You can save money choosing the best tariff")
 
+➡️ Try it here : [Electric and Solar Tariff Recommender](https://electric-tariff-recommender.streamlit.app/) ⬅️
+
 ## 📋 Objective
 The goal of this project is to provide personalized recommendations for solar panel installations in homes, helping users to save on their electricity bills and contribute to a more sustainable world. 🌍✨
 
@@ -68,6 +70,7 @@ We used Trello for project management, allowing us to track our progress and col
   - **streamlit_app/**
   - **summary_report/**
   - .gitignore
+  - recomendador_tarifas.pdf
   - requirements.txt
   - README.md
 
@@ -84,7 +87,8 @@ The Streamlit app has the following structure:
 
 
 ## 🎥 Project Presentation
-A pdf presentation of the project is available [here](#).
+A pdf presentation of the project is available [here](https://github.com/datasilvia/data-wrangling-project/blob/main/recomendador_tarifas.pdf).
+The online version of the presentation is also available [here](https://www.canva.com/design/DAGVK1T4r0Q/1RBA97MLAYG6vvedLw5uRA/edit).
 
 ##  📊 Data Sources
 
